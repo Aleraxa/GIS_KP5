@@ -15,6 +15,3 @@ def greet(who_to_greet):
 print(greet("Alice"))
 r = requests.get("https://pl.wikipedia.org/wiki/Programowanie_neurolingwistyczne")
 print(r.status_code)
-
-name = input("name?")
-print("Hello,", name)
