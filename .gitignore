@@ -1,2 +1,3 @@
 venv
 .vscode
+print_version.py
