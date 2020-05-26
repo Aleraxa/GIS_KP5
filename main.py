@@ -84,6 +84,7 @@ def PokazGraf(Graf, kolory):
         node_color=kolory,
         vmin=0,
         vmax=4,
+        edgecolors="k",
         cmap=plt.cm.get_cmap("rainbow"),
         with_labels=True,
     )
@@ -146,6 +147,7 @@ if __name__ == "__main__":
     G = WczytajGraf()
     print("Krawedzie: ", G.edges)
 
+    PokazGraf(G, "#fbfdfe")
     # obliczanie liczby krawędzi
     m = G.number_of_edges()
 
