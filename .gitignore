@@ -2,3 +2,6 @@ venv
 .vscode
 print_version.py
 bash.exe.stackdump
+out/output_Naiwny_final.txt
+out/output_SmallestLast.txt
+res/generated.txt

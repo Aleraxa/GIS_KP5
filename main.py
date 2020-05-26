@@ -6,8 +6,6 @@ from collections import Counter
 
 # from .classic import empty_graph, path_graph, complete_graph
 
-print("Rozpoczecie wczytywania pliku z grafem \n")
-
 # Wczytanie grafu G z pliku input.txt
 def WczytajGraf():
     # G = nx.star_graph(n)
@@ -17,6 +15,15 @@ def WczytajGraf():
         x = line.split()
         G.add_edge(x[0], x[1])
     return G
+
+
+def ZapiszGraf(G, plik):
+
+    for krotka in G._node:
+        print(str(krotka) + "  kolor: " + str(G.nodes[krotka]["kolor"]), file=plik)
+    # print(G._node, file=plik)
+    plik.close()
+    return 0
 
 
 # sortowanie wierzchołków metodą "najmniejszy na końcu"
@@ -96,12 +103,14 @@ def PokazGraf(Graf, kolory):
 def Naiwny():
     # słownik z parami 'wierzchołek': int(kolor)
     b = nx.get_node_attributes(G, "kolor")
+
     # stworzenie listy wartości kolorów do wyłuskania liczby ich wystąpień
     c = list(b.values())
     # PokazGraf(G, c)
 
     # indeks w liście odpowiada numerowi koloru
     c.sort()
+
     # zliczenie wystąpień kolorów
     liczba_wystapien = list((Counter(c)).values())
     colmin = min(liczba_wystapien)
@@ -116,6 +125,7 @@ def Naiwny():
 
         # zbiór wierzchołków o 'kolor' == kolor_max
         lista = [n for n in G.nodes() if G.nodes[n]["kolor"] == kolor_max]
+        flaga = 0
         for n in lista:
             lista_sasiadow = list(G.adj[n])
             for sasiad in lista_sasiadow:
@@ -140,14 +150,39 @@ def Naiwny():
     return G
 
 
+def Test(nr_testu):
+    print("Test nr ", nr_testu)
+    if nr_testu == 1:
+        G = WczytajGraf()
+
+    if nr_testu == 2:
+        G = nx.complete_graph(5)
+        plik = open("res/generated.txt", "wb")
+        nx.write_edgelist(G, plik, data=False)
+        plik.close()
+
+    if nr_testu == 3:
+        G = nx.fast_gnp_random_graph(5, 0.3)
+        plik = open("res/generated.txt", "wb")
+        nx.write_edgelist(G, plik, data=False)
+        plik.close()
+
+    if nr_testu == 4:
+        G = nx.newman_watts_strogatz_graph(10, 3, 0.3)
+        plik = open("res/generated.txt", "wb")
+        nx.write_edgelist(G, plik, data=False)
+        plik.close()
+
+    return G
+
+
 # def Zwroc_wierzcholki():
 # return {n for n in G.nodes() if G.nodes(n).data("kolor") == colmax}
 
 if __name__ == "__main__":
-    G = WczytajGraf()
-    print("Krawedzie: ", G.edges)
-
+    G = Test(1)
     PokazGraf(G, "#fbfdfe")
+
     # obliczanie liczby krawędzi
     m = G.number_of_edges()
 
@@ -173,11 +208,11 @@ if __name__ == "__main__":
     # -----------------------------------------KolorujZachłannie()
     G = KolorujZachłannie()
 
-    print(G._node)
     PokazGraf(G, list(nx.get_node_attributes(G, "kolor").values()))
+    ZapiszGraf(G, open("out/output_SmallestLast.txt", "w"))
 
     # -------------------------------------------------Naiwny()
     G = Naiwny()
 
-    print(G._node)
     PokazGraf(G, list(nx.get_node_attributes(G, "kolor").values()))
+    ZapiszGraf(G, open("out/output_Naiwny_final.txt", "w"))
