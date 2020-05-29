@@ -5,3 +5,6 @@ bash.exe.stackdump
 out/output_Naiwny_final.txt
 out/output_SmallestLast.txt
 res/generated.txt
+out/output_Naiwny_final.png
+out/output_SmallestLast.png
+res/input_graph.png

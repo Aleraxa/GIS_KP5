@@ -1,6 +1,7 @@
 import sys
 import math
 import networkx as nx
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from collections import Counter
 
@@ -68,6 +69,12 @@ def KolorujZachłannie():
         tab = ["false"] * n
         v1 = lista_smallest_last[j]
         lista_sasiadow = list(G.adj[lista_smallest_last[j]])
+
+        # jeśli wierzchołek nie ma sąsiadów to pokoloruj na pierwszy istniejący kolor
+        if lista_sasiadow == []:
+            G.nodes[v1]["kolor"] = 0
+            break
+
         for sasiad in lista_sasiadow:
             if G.nodes[sasiad]["kolor"] > -1:
                 tab[G.nodes[sasiad]["kolor"]] = "true"
@@ -80,22 +87,24 @@ def KolorujZachłannie():
     return G
 
 
-def PokazGraf(Graf, kolory):
+def PokazGraf(Graf, kolory, plik):
     # ----------------interpretacja graficzna pokolorowanego grafu
+    print(kolory)
+    low, *_, high = sorted(kolory)
+    norm = mpl.colors.Normalize(vmin=low, vmax=high, clip=True)
+    mapper = mpl.cm.ScalarMappable(norm=norm, cmap=plt.cm.get_cmap("Spectral"))
+
     print(Graf._node)
     plt.figure()
 
     nx.draw(
         Graf,
         pos=None,
-        node_color=kolory,
-        vmin=0,
-        vmax=4,
+        node_color=[mapper.to_rgba(i) for i in kolory],
         edgecolors="k",
-        cmap=plt.cm.get_cmap("rainbow"),
         with_labels=True,
     )
-
+    plt.savefig(plik)
     plt.show()
     return 0
 
@@ -106,7 +115,7 @@ def Naiwny():
 
     # stworzenie listy wartości kolorów do wyłuskania liczby ich wystąpień
     c = list(b.values())
-    # PokazGraf(G, c)
+    # PokazGraf(G, c, 'out/input.png')
 
     # indeks w liście odpowiada numerowi koloru
     c.sort()
@@ -134,6 +143,7 @@ def Naiwny():
             else:
                 G.nodes[n]["kolor"] = kolor_min
                 flaga = 1
+                break
 
         # nadanie nowego koloru gdy żaden wierzchołek z kolor_max nie zmienił koloru na kolor_min
         if flaga != 1:
@@ -156,13 +166,13 @@ def Test(nr_testu):
         G = WczytajGraf()
 
     if nr_testu == 2:
-        G = nx.complete_graph(5)
+        G = nx.complete_graph(30)
         plik = open("res/generated.txt", "wb")
         nx.write_edgelist(G, plik, data=False)
         plik.close()
 
     if nr_testu == 3:
-        G = nx.fast_gnp_random_graph(5, 0.3)
+        G = nx.fast_gnp_random_graph(8, 0.3)
         plik = open("res/generated.txt", "wb")
         nx.write_edgelist(G, plik, data=False)
         plik.close()
@@ -181,7 +191,15 @@ def Test(nr_testu):
 
 if __name__ == "__main__":
     G = Test(1)
-    PokazGraf(G, "#fbfdfe")
+    # G.add_node("1")
+
+    # ustawienie domyślnego koloru '-1' dla wszystkich wierzchołków w grafie G. Kolor jest słownikiem.
+    nx.set_node_attributes(G, -1, "kolor")
+
+    # prezentacja grafu wejściowego z wierzchołkami o jednym kolorze
+    PokazGraf(
+        G, list(nx.get_node_attributes(G, "kolor").values()), "res/input_graph.png",
+    )
 
     # obliczanie liczby krawędzi
     m = G.number_of_edges()
@@ -202,17 +220,22 @@ if __name__ == "__main__":
     # ------------------------------------------------SmallestLast()
     lista_smallest_last = SmallestLast()
 
-    # ustawienie domyślnego koloru '-1' dla wszystkich wierzchołków w grafie G. Kolor jest słownikiem.
-    nx.set_node_attributes(G, -1, "kolor")
-
     # -----------------------------------------KolorujZachłannie()
     G = KolorujZachłannie()
 
-    PokazGraf(G, list(nx.get_node_attributes(G, "kolor").values()))
+    PokazGraf(
+        G,
+        list(nx.get_node_attributes(G, "kolor").values()),
+        "out/output_SmallestLast.png",
+    )
     ZapiszGraf(G, open("out/output_SmallestLast.txt", "w"))
 
     # -------------------------------------------------Naiwny()
     G = Naiwny()
 
-    PokazGraf(G, list(nx.get_node_attributes(G, "kolor").values()))
+    PokazGraf(
+        G,
+        list(nx.get_node_attributes(G, "kolor").values()),
+        "out/output_Naiwny_final.png",
+    )
     ZapiszGraf(G, open("out/output_Naiwny_final.txt", "w"))
