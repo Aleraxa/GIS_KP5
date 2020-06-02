@@ -1,17 +1,15 @@
-import sys
 import math
 import networkx as nx
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from collections import Counter
 
-# from .classic import empty_graph, path_graph, complete_graph
 
 # Wczytanie grafu G z pliku input.txt
-def WczytajGraf():
+def WczytajGraf(nazwa_pliku):
     # G = nx.star_graph(n)
     G = nx.Graph()
-    plik = open("res/input.txt")
+    plik = open(nazwa_pliku)
     for line in plik:
         x = line.split()
         G.add_edge(x[0], x[1])
@@ -22,7 +20,6 @@ def ZapiszGraf(G, plik):
 
     for krotka in G._node:
         print(str(krotka) + "  kolor: " + str(G.nodes[krotka]["kolor"]), file=plik)
-    # print(G._node, file=plik)
     plik.close()
     return 0
 
@@ -89,12 +86,10 @@ def KolorujZachłannie():
 
 def PokazGraf(Graf, kolory, plik):
     # ----------------interpretacja graficzna pokolorowanego grafu
-    print(kolory)
     low, *_, high = sorted(kolory)
     norm = mpl.colors.Normalize(vmin=low, vmax=high, clip=True)
     mapper = mpl.cm.ScalarMappable(norm=norm, cmap=plt.cm.get_cmap("Spectral"))
 
-    print(Graf._node)
     plt.figure()
 
     nx.draw(
@@ -156,86 +151,136 @@ def Naiwny():
         liczba_wystapien = list((Counter(c)).values())
         colmin = min(liczba_wystapien)
         colmax = max(liczba_wystapien)
-    # -----------koniec pętli while
-    return G
+
+    # wypisanie colmin i colmax w celu sprawdzenia poprawności z teorią
+    print("Colmin = ", colmin, "Colmax = ", colmax)
+
+    return G, colmax - colmin
 
 
-def Test(nr_testu):
-    print("Test nr ", nr_testu)
+def Test(nr_testu, nr, l_wierzcholkow):
+    print("Scenariusz testowy nr ", nr_testu)
     if nr_testu == 1:
-        G = WczytajGraf()
+        G = WczytajGraf("res/input.txt")
 
     if nr_testu == 2:
-        G = nx.complete_graph(30)
-        plik = open("res/generated.txt", "wb")
+        G = nx.complete_graph(l_wierzcholkow)
+        plik = open(
+            "res/tests/test_complete_30_graphs/generated" + str(nr) + ".txt", "wb"
+        )
         nx.write_edgelist(G, plik, data=False)
         plik.close()
 
     if nr_testu == 3:
-        G = nx.fast_gnp_random_graph(8, 0.3)
-        plik = open("res/generated.txt", "wb")
+        G = nx.fast_gnp_random_graph(l_wierzcholkow, 0.4)
+        plik = open(
+            "res/tests/test_random_30_graphs/generated" + str(nr) + ".txt", "wb"
+        )
         nx.write_edgelist(G, plik, data=False)
         plik.close()
 
     if nr_testu == 4:
-        G = nx.newman_watts_strogatz_graph(10, 3, 0.3)
+        G = nx.newman_watts_strogatz_graph(100, 3, 0.3)
         plik = open("res/generated.txt", "wb")
         nx.write_edgelist(G, plik, data=False)
         plik.close()
 
+    if nr_testu == 5:
+        G = nx.random_tree(100)
+        plik = open("res/generated.txt", "wb")
+        nx.write_edgelist(G, plik, data=False)
+        plik.close()
+
+    if nr_testu == 6:
+        G = WczytajGraf("res/tests/generated_drzewo_100.txt")
+
+    if nr_testu == 7:
+        G = WczytajGraf("res/tests/generated_newmann_100.txt")
+
+    if nr_testu == 8:
+        G = WczytajGraf("res/tests/generated_random_100.txt")
+
+    if nr_testu == 9:
+        G = WczytajGraf("res/tests/generated_vertix_alone.txt")
+        G.add_node("1")
+
     return G
 
 
-# def Zwroc_wierzcholki():
-# return {n for n in G.nodes() if G.nodes(n).data("kolor") == colmax}
-
 if __name__ == "__main__":
-    G = Test(1)
-    # G.add_node("1")
 
-    # ustawienie domyślnego koloru '-1' dla wszystkich wierzchołków w grafie G. Kolor jest słownikiem.
-    nx.set_node_attributes(G, -1, "kolor")
+    # numer scenariusza testowego, podawany do funckji Test(). Każdy scenariusz testowy odpowiada innemu typowi grafów lub sposobu jego
+    # podawania na wejście (plik lub generowany na nowo). Docelowo '1'.
+    nr_testu = 1
 
-    # prezentacja grafu wejściowego z wierzchołkami o jednym kolorze
-    PokazGraf(
-        G, list(nx.get_node_attributes(G, "kolor").values()), "res/input_graph.png",
-    )
+    # inicjalizacja listy do sprawdzania przejścia testów oraz licznika testów
+    test_result = []
+    nr = 1
 
-    # obliczanie liczby krawędzi
-    m = G.number_of_edges()
+    while nr < 31:
+        G = Test(nr_testu, nr, nr * 7)
 
-    # obliczanie liczby wierzcholkow
-    n = G.number_of_nodes()
+        print("Test nr ", nr)
 
-    print("Liczba krawedzi: ", m, "\nLiczba wierzcholkow: ", n)
+        # ustawienie domyślnego koloru '-1' dla wszystkich wierzchołków w grafie G. Kolor jest słownikiem.
+        nx.set_node_attributes(G, -1, "kolor")
 
-    # stworzenie listy wierzchołków
-    lista_wierzcholkow = list(G.nodes())
+        # prezentacja grafu wejściowego z wierzchołkami o jednym kolorze
+        PokazGraf(
+            G, list(nx.get_node_attributes(G, "kolor").values()), "res/input_graph.png",
+        )
 
-    # stworzenie listy stopni wierzchołków po przez listę słowników. Jeden słownik/krotka odpowiada jednemu wierzchołkowi
-    # key: indeks wierzchołka, value: stopień wierzchołka
-    # ////lista_stopni_prim = sorted(G.degree(), key=lambda kv: int(kv[0]))
-    lista_stopni = list(G.degree())
+        # obliczanie liczby krawędzi
+        m = G.number_of_edges()
 
-    # ------------------------------------------------SmallestLast()
-    lista_smallest_last = SmallestLast()
+        # obliczanie liczby wierzcholkow
+        n = G.number_of_nodes()
 
-    # -----------------------------------------KolorujZachłannie()
-    G = KolorujZachłannie()
+        # stworzenie listy wierzchołków
+        lista_wierzcholkow = list(G.nodes())
 
-    PokazGraf(
-        G,
-        list(nx.get_node_attributes(G, "kolor").values()),
-        "out/output_SmallestLast.png",
-    )
-    ZapiszGraf(G, open("out/output_SmallestLast.txt", "w"))
+        # stworzenie listy stopni wierzchołków po przez listę słowników. Jeden słownik/krotka odpowiada jednemu wierzchołkowi
+        # key: indeks wierzchołka, value: stopień wierzchołka
+        lista_stopni = list(G.degree())
 
-    # -------------------------------------------------Naiwny()
-    G = Naiwny()
+        # ------------------------------------------------SmallestLast()
+        lista_smallest_last = SmallestLast()
 
-    PokazGraf(
-        G,
-        list(nx.get_node_attributes(G, "kolor").values()),
-        "out/output_Naiwny_final.png",
-    )
-    ZapiszGraf(G, open("out/output_Naiwny_final.txt", "w"))
+        # -----------------------------------------KolorujZachłannie()
+        G = KolorujZachłannie()
+
+        # prezentacja grafu po zachłannym kolorowaniu
+        PokazGraf(
+            G,
+            list(nx.get_node_attributes(G, "kolor").values()),
+            "out/output_SmallestLast.png",
+        )
+
+        # zapisanie grafu do pliku .txt
+        ZapiszGraf(G, open("out/output_SmallestLast.txt", "w"))
+
+        # -------------------------------------------------Naiwny()
+        (G, roznica) = Naiwny()
+
+        # test czy graf sprawiedliwie pokolorowany przez funkcję Naiwny()
+        if roznica > 1:
+            test_result.append("false")
+        else:
+            test_result.append("true")
+
+        # prezentacja grafu po kolorowaniu sprawiedliwym
+        PokazGraf(
+            G,
+            list(nx.get_node_attributes(G, "kolor").values()),
+            "out/output_Naiwny_final.png",
+        )
+
+        # zapisanie grafu do pliku .txt
+        ZapiszGraf(G, open("out/output_Naiwny_final.txt", "w"))
+
+        if nr_testu == 1:
+            break
+        nr += 1
+
+    # zapisanie listy test_result do pliku
+    print(test_result, file=open("out/test_result" + str(nr_testu) + ".txt", "w"))

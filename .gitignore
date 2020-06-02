@@ -8,3 +8,8 @@ res/generated.txt
 out/output_Naiwny_final.png
 out/output_SmallestLast.png
 res/input_graph.png
+out/test_result.txt
+out/test_result1.txt
+out/test_result2.txt
+res/tests/test_complete_30_graphs/
+res/tests/test_random_30_graphs/
