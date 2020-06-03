@@ -1,0 +1,11 @@
+0  kolor: 0
+7  kolor: 2
+1  kolor: 1
+3  kolor: 2
+2  kolor: 1
+8  kolor: 1
+10  kolor: 1
+9  kolor: 0
+6  kolor: 0
+5  kolor: 2
+4  kolor: 0
